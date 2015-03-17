@@ -1,1 +1,5 @@
 =AND(K2<>"",K2<>0,SUMPRODUCT(--(ABS($K$2:$K$15452)=ABS(K2)))>1)
+
+Alternatively...
+
+=INDEX($A$1:$A$100, MATCH(-A1, $A$1:$A$100, 0))
