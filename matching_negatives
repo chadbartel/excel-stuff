@@ -1,0 +1,1 @@
+=AND(A1<>"",SUMPRODUCT(--(ABS($A$1:$A$1400)=ABS(A1)))>1)
