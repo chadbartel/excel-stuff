@@ -1,0 +1,3 @@
+=TRIM(RIGHT(SUBSTITUTE(F2," ",REPT(" ",LEN(F2))),LEN(F2)))
+
+This formula will look in a string (F2) and find the last "word" in that string that is before a space.
