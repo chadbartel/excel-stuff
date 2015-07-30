@@ -1,0 +1,3 @@
+=ISNUMBER(SEARCH("Some Text",[@[Column1]]))
+
+This formula returns TRUE/FALSE if it finds the substring in the specified field.
