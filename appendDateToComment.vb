@@ -3,31 +3,38 @@
 Sub appendDateToComment()
 
 ' Declare our variables
-Dim ws As Worksheet
-Dim lr As Long
-Dim oldCom As Comment
-Dim newCom As Comment
-Dim chk As Long
-Dim firstAddress As Long
+Dim r As Range
+Dim c As Range
+Dim sCommentCurrent As String
+Dim sCommentAdd As String
+Dim sCommentNew As String
 
-' Set out variables equal to their values
-Set ws = ThisWorkbook.Sheets("Comment Update Sheet")
-' This is looking for the last row in column "I"
-Set lr = ws.Cells(Rows.Count, 9).End(xlUp).Row
+' Store the selected cells in a var
+Set r = Range(ActiveCell, ActiveCell.End(xlDown))
 
-With ws.Range("I2:I" & lr)
-    Set chk = .Find("Emailed", LookIn:=xlWhole, SearchOrder:=xlByRows, _
-        MatchCase:=True)
-    ' If chk finds a match...
-    If Not chk Is Nothing Then
-        firstAddress = chk.Address
-        Do
-            oldCom = chk.Comment
-            newCom = oldCom.Text(vbNewLine & VBA.DateTime.Month(Now) _
-                & "/" & VBA.DateTime.Day(Now) & "/" & VBA.DateTime.Year(Now))
-            chk.Comment = newCom
-        Loop While Not chk Is Nothing And chk.Address <> firstAddress
+' Set the new "Emailed" comment string
+sCommentNew = "Emailed:" & vbNewLine & VBA.DateTime.Month(Now) _
+        & "/" & VBA.DateTime.Day(Now) & "/" & VBA.DateTime.Year(Now)
+
+' Loop through selected range
+For Each c In r
+    ' The added comment won't change, this should save space
+    sCommentAdd = vbNewLine & VBA.DateTime.Month(Now) & "/" _
+        & VBA.DateTime.Day(Now) & "/" & VBA.DateTime.Year(Now)
+        
+    On Error Resume Next
+    sCommentCurrent = c.Comment.Text
+    sCommentAdd = sCommentCurrent & sCommentAdd
+    c.Comment.Text Text:=sCommentAdd
+    
+    If Err.Number = 91 Then
+        Err.Clear
+        c.AddComment
+        c.Comment.Text sCommentNew
     End If
-End With
+    
+    c.Comment.Shape.TextFrame.AutoSize = True
+    
+Next c
 
 End Sub
