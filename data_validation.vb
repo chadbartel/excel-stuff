@@ -137,11 +137,12 @@ Set uploadws = macdwb.Worksheets("Upload " & _
 Set locationws = macdwb.Worksheets("Locations")
 lastRowLoc = locationws.Cells(Rows.Count, 15).End(xlUp).Row
 lastRowSN = uploadws.Cells(Rows.Count, 21).End(xlUp).Row
-sCommentDG = "Data discrepancy between column D and G."
+sCommentDG = "Customer Name (G) doesn't match Address Name (D)."
 
 For i = 2 To lastRowSN
     cellVal = uploadws.Range("D" & i).Value
     For j = 2 To lastRowLoc
+        On Error Resume Next
         If cellVal = locationws.Range("N" & j).Value And _
             uploadws.Range("G" & i).Value <> locationws.Range("B" & j).Value Then
             If uploadws.Range("U" & i).Comment Is Nothing Then
@@ -168,7 +169,6 @@ End Sub
 'Dim uploadws As Worksheet
 'Dim locationws As Worksheet
 'Dim lastRowLoc As Long
-'Dim snrange As Range
 'Dim sCommentCurrent As String
 'Dim sCommentDO As String
 'Dim i As Integer
@@ -180,16 +180,15 @@ End Sub
 'Set locationws = macdwb.Worksheets("Locations")
 'lastRowLoc = locationws.Cells(Rows.Count, 15).End(xlUp).Row
 'lastRowSN = uploadws.Cells(Rows.Count, 21).End(xlUp).Row
-'Set snrange = uploadws.Range("U2:U" & lastRowSN)
-'sCommentDO = "Data discrepancy between column D and O."
+'sCommentDO = "Contact User ID (O) doesn't match Address Name (D)."
 '
 'For i = 2 To lastRowSN
 '    cellVal = uploadws.Range("D" & i).Value
+'    contactid = uploadws.Range("O" & i).Value
 '    For j = 2 To lastRowLoc
 '        On Error Resume Next
 '        If cellVal = locationws.Range("N" & j).Value And _
-'            uploadws.Range("O" & i).Value <> _
-'                Str(locationws.Range("O" & j).Value) Then
+'            contactid <> locationws.Range("O" & j).Value Then
 '            If uploadws.Range("U" & i).Comment Is Nothing Then
 '                With uploadws.Range("U" & i).AddComment
 '                    .Text sCommentDO
@@ -210,63 +209,44 @@ End Sub
 
 Sub Discrepancy_DR_validate()
 
-' Declare MACD workbook variable
 Dim macdwb As Workbook
-Set macdwb = ThisWorkbook
-
-' Declare worksheets on which data validation will be performed
 Dim uploadws As Worksheet
+Dim lastRowSN As Long
 Dim locationws As Worksheet
-Set uploadws = macdwb.Worksheets("Upload " & _
-    VBA.DateTime.Month(Now) & "-" & VBA.DateTime.Day(Now))
-Set locationws = macdwb.Worksheets("Locations")
-
-'Since the size of the location worksheet doesn't change...
-lastRowLoc = 488
-
-' Declare the ranges you will be validating
-Dim snrange As Range
-lastRowSN = uploadws.Cells(Rows.Count, 21).End(xlUp).Row
-Set snrange = uploadws.Range("U2:U" & lastRowSN)
-
-' Declare static comment strings
+Dim lastRowLoc As Long
 Dim sCommentCurrent As String
-Dim sCommentNew As String
-
-' Create static values for static comment strings
-sCommentNew = "Data Validation Message:" & vbNewLine
-
-' Declare comment strings
 Dim sCommentDR As String
-
-' Create static values for comment strings
-sCommentDR = "Data discrepancy between column D and R." & vbNewLine
-
-' Declare iterators for For loop
 Dim i As Integer
 Dim j As Integer
 
-' Check if there is a discrepancy between column D and R
-For Each cell In snrange
-    cellVal = cell.Value
+Set macdwb = ThisWorkbook
+Set uploadws = macdwb.Worksheets("Upload " & _
+    VBA.DateTime.Month(Now) & "-" & VBA.DateTime.Day(Now))
+Set locationws = macdwb.Worksheets("Locations")
+lastRowLoc = locationws.Cells(Rows.Count, 15).End(xlUp).Row
+lastRowSN = uploadws.Cells(Rows.Count, 21).End(xlUp).Row
+sCommentDR = "Data discrepancy between column D and R."
+
+For i = 2 To lastRowSN
+    cellVal = uploadws.Range("D" & i).Value
+    costcenter = uploadws.Range("R" & i).Value
     For j = 2 To lastRowLoc
         On Error Resume Next
-        If cellVal = locationws.Cells(j, 14).Value And _
-            uploadws.Cells(i, 18).Value <> locationws.Cells(j, 13).Value Then
-            If cell.Comment Is Nothing Then
-                ' set the comment equal to the error code
-                cell.Comment.Text Text:=sCommentDR
-                cell.Comment.Shape.TextFrame.AutoSize = True
-                Exit For
+        If cellVal = locationws.Range("N" & j).Value And _
+            costcenter <> locationws.Range("M" & j).Value Then
+            If uploadws.Range("U" & i).Comment Is Nothing Then
+                With uploadws.Range("U" & i).AddComment
+                    .Text sCommentDR
+                    .Shape.TextFrame.AutoSize = True
+                End With
             Else
-                ' append error code to the comment
-                sCommentDR = cell.Comment.Text & sCommentDR
-                cell.Comment.Text Text:=sCommentDR
-                cell.Comment.Shape.TextFrame.AutoSize = True
-                Exit For
+                sCommentDR = uploadws.Range("U" & i).Comment.Text & _
+                    vbNewLine & sCommentDR
+                uploadws.Range("U" & i).Comment.Text Text:=sCommentDR
+                uploadws.Range("U" & i).Comment.Shape.TextFrame.AutoSize = True
             End If
         End If
     Next j
-Next cell
+Next i
 
 End Sub
